@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* --- TAMBAHAN CSS UNTUK EFEK PREMIUM --- */
+
+/* Latar Belakang Mesh Gradient Bergerak */
+/* --- PERBAIKAN: Ganti nama class yang error tadi dengan ini --- */
+
+/* Latar Belakang Mesh Gradient Bergerak */
+.bg-grid-pattern {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(15 23 42 / 0.04)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+}
+
+/* Efek Glow pada Hover Card (Tetap sama) */
+.hover-glow-card {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+.hover-glow-card::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: -1;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(147,51,234,0.2) 30%, rgba(0,0,0,0) 70%);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+    opacity: 0;
+    pointer-events: none;
+}
+.hover-glow-card:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}

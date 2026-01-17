@@ -2,22 +2,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { Sparkles, Menu, X, ArrowRight } from 'lucide-react'; // Tambah Menu & X
-import { motion, AnimatePresence } from 'framer-motion'; // Kita butuh animasi
+import { Menu, X, ArrowRight, Rocket } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // State untuk menu HP
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Daftar Menu biar rapi
   const navLinks = [
     { name: 'Beranda', href: '/' },
     { name: 'Profil', href: '/profil' },
@@ -27,50 +26,64 @@ export default function Navbar() {
     { name: 'Berita', href: '/berita' },
     { name: "PPDB", href: "/ppdb" },
     { name: "Kontak", href: "/kontak" },
-    { name: "Tech Stack & Architecture", href: "/tech" },
+    // Tech Stack kita pisah biar jadi tombol khusus di mobile
   ];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-500 ${
-      scrolled || mobileMenuOpen ? "bg-slate-950/90 backdrop-blur-xl py-4 border-b border-white/10" : "bg-transparent py-6"
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled 
+        ? "bg-slate-950/90 backdrop-blur-xl py-3 border-b border-white/10" 
+        : "bg-transparent py-5"
     }`}>
       <div className="container mx-auto px-4 flex justify-between items-center">
         
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group z-50 relative">
-          {/* Wadah Gambar Logo */}
-          <div className="relative w-10 h-10 md:w-12 md:h-12 transform group-hover:rotate-12 transition-transform duration-300">
+        {/* --- 1. LOGO (Responsive Text) --- */}
+        <Link href="/" className="flex items-center gap-3 group relative z-50">
+          <div className="relative w-10 h-10 transform group-hover:rotate-12 transition-transform duration-300">
              <Image 
                 src="/logo.png" 
-                alt="Logo Future Academy" 
+                alt="Logo" 
                 fill
                 className="object-contain drop-shadow-lg"
              />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-white">
-            SMK PK<span className="text-cyan-400">KAMPUNG JAWA JAKARTA</span>
-          </span>
+          {/* Teks Logo: Ukuran menyesuaikan layar biar gak nabrak */}
+          <div className="flex flex-col justify-center">
+             <span className="text-sm md:text-lg font-extrabold tracking-tight text-white leading-none">
+                SMK <span className="text-cyan-400">PK</span>
+             </span>
+             <span className="text-[10px] md:text-xs font-medium text-slate-400 tracking-[0.2em] uppercase">
+                Kampung Jawa Jakarta
+             </span>
+          </div>
         </Link>
 
-        {/* --- DESKTOP MENU (Hidden di HP) --- */}
-        <div className="hidden md:flex items-center space-x-1">
+        {/* --- 2. DESKTOP MENU (Hanya muncul di XL / >1280px) --- */}
+        {/* PERUBAHAN UTAMA: ganti 'hidden md:flex' jadi 'hidden xl:flex' */}
+        <div className="hidden xl:flex items-center bg-slate-900/50 p-1 rounded-full border border-white/5 backdrop-blur-sm">
           {navLinks.map((item) => (
-            <Link key={item.name} href={item.href} className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white relative group overflow-hidden rounded-lg">
-               <span className="relative z-10">{item.name}</span>
-               <span className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-lg"></span>
+            <Link key={item.name} href={item.href} className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white relative group rounded-full hover:bg-white/10 transition-all">
+               {item.name}
             </Link>
           ))}
         </div>
 
-        {/* Tombol Login Desktop */}
-        <Link href="/login" className="hidden md:flex relative group px-6 py-2.5 font-bold text-sm rounded-full overflow-hidden bg-slate-800 text-white border border-white/10 hover:border-cyan-500/50 transition-colors">
-            <span className="relative z-10 flex items-center gap-2">Login Sistem </span>
-            <div className="absolute inset-0 h-full w-[200%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0_deg,transparent_90deg,#06b6d4_180deg,transparent_270deg,transparent_360deg)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 md:group-hover:animate-[spin_2s_linear_infinite]" style={{ top: '-50%', left: '-50%' }}></div>
-        </Link>
+        {/* --- 3. TOMBOL KANAN (Desktop XL only) --- */}
+        <div className="hidden xl:flex items-center gap-3">
+             {/* Tombol Tech Stack kecil */}
+            <Link href="/tech" className="text-slate-400 hover:text-cyan-400 transition-colors p-2" title="Tech Stack">
+                <Rocket size={20} />
+            </Link>
 
-        {/* --- MOBILE HAMBURGER BUTTON --- */}
+            <Link href="/login" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20">
+                Login
+            </Link>
+        </div>
+
+        {/* --- 4. HAMBURGER BUTTON (Muncul di HP, Tablet, & Laptop Kecil) --- */}
+        {/* PERUBAHAN: ganti 'md:hidden' jadi 'xl:hidden' */}
         <button 
-          className="md:hidden text-white z-50 relative"
+          className="xl:hidden text-white z-50 p-2 hover:bg-white/10 rounded-full transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -78,7 +91,7 @@ export default function Navbar() {
 
       </div>
 
-      {/* --- MOBILE MENU OVERLAY --- */}
+      {/* --- 5. MOBILE / TABLET MENU OVERLAY --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -86,26 +99,47 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="absolute top-full left-0 w-full bg-slate-950/95 backdrop-blur-xl border-b border-white/10 md:hidden flex flex-col p-4 shadow-2xl"
+            className="fixed inset-0 z-40 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 space-y-6"
           >
-            {navLinks.map((item) => (
-              <Link 
-                key={item.name} 
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)} // Tutup menu saat diklik
-                className="py-4 text-center text-lg font-medium text-slate-300 hover:text-white border-b border-white/5 last:border-0"
+             {/* Background Decoration */}
+             <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+            {navLinks.map((item, i) => (
+              <motion.div
+                key={item.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="w-full max-w-xs"
               >
-                {item.name}
-              </Link>
+                <Link 
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-center text-2xl font-bold text-slate-300 hover:text-white hover:scale-105 transition-transform"
+                >
+                    {item.name}
+                </Link>
+              </motion.div>
             ))}
-            
-            <Link 
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="mt-4 w-full bg-gradient-to-r from-cyan-600 to-blue-600 py-3 rounded-xl text-white font-bold text-center flex justify-center items-center gap-2"
-            >
-              Login Sistem <ArrowRight size={18} />
-            </Link>
+
+            {/* Tombol Tambahan di Mobile Menu */}
+            <div className="flex flex-col w-full max-w-xs gap-4 pt-6 border-t border-white/10 mt-4">
+                <Link 
+                    href="/tech"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 py-3 bg-slate-900 border border-white/10 rounded-xl text-slate-300 font-bold"
+                >
+                    <Rocket size={18} className="text-cyan-400" /> Tech Stack
+                </Link>
+                <Link 
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-white font-bold shadow-lg shadow-cyan-500/20"
+                >
+                    Login Sistem <ArrowRight size={18} />
+                </Link>
+            </div>
+
           </motion.div>
         )}
       </AnimatePresence>

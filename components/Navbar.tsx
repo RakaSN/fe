@@ -22,8 +22,12 @@ export default function Navbar() {
     { name: 'Beranda', href: '/' },
     { name: 'Profil', href: '/profil' },
     { name: 'Jurusan', href: '/jurusan' },
+    { name: "Guru", href: "/guru" },
+    { name: "Galeri", href: "/galeri" },
     { name: 'Berita', href: '/berita' },
     { name: "PPDB", href: "/ppdb" },
+    { name: "Kontak", href: "/kontak" },
+    { name: "Tech Stack & Architecture", href: "/tech" },
   ];
 
   return (
@@ -105,6 +109,7 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+      
     </nav>
   );
 }

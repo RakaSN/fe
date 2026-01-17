@@ -5,7 +5,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import FloatingChat from "@/components/FloatingChat";
 import Navbar from "@/components/Navbar";
 import CustomCursor from "@/components/CustomCursor";
-
+import CommandPalette from "@/components/CommandPalette";
 const fontOutfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -26,6 +26,7 @@ export default function RootLayout({
       <body className={`${fontOutfit.className} bg-slate-950 text-slate-100 antialiased`}>
         <ScrollProgress />
         <Navbar />
+        <CommandPalette />
         <CustomCursor />
         <FloatingChat />
         {children}

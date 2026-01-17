@@ -46,7 +46,7 @@ export default function Home() {
       </section>
 
       {/* 7. Fitur Chat (Global) */}
-      <FloatingChat />
+     
 <Footer />
       {/* Footer Sederhana */}
       <footer className="bg-slate-900 text-white py-12">

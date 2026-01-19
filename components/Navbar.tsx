@@ -26,8 +26,10 @@ export default function Navbar() {
     { name: 'Berita', href: '/berita' },
     { name: "PPDB", href: "/ppdb" },
     { name: "Kontak", href: "/kontak" },
-    // Tech Stack kita pisah biar jadi tombol khusus di mobile
   ];
+
+  // URL Backend Laravel (Admin Panel)
+  const ADMIN_URL = "http://127.0.0.1:8000/admin";
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -37,7 +39,7 @@ export default function Navbar() {
     }`}>
       <div className="container mx-auto px-4 flex justify-between items-center">
         
-        {/* --- 1. LOGO (Responsive Text) --- */}
+        {/* --- 1. LOGO --- */}
         <Link href="/" className="flex items-center gap-3 group relative z-50">
           <div className="relative w-10 h-10 transform group-hover:rotate-12 transition-transform duration-300">
              <Image 
@@ -47,7 +49,6 @@ export default function Navbar() {
                 className="object-contain drop-shadow-lg"
              />
           </div>
-          {/* Teks Logo: Ukuran menyesuaikan layar biar gak nabrak */}
           <div className="flex flex-col justify-center">
              <span className="text-sm md:text-lg font-extrabold tracking-tight text-white leading-none">
                 SMK <span className="text-cyan-400">PK</span>
@@ -58,8 +59,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* --- 2. DESKTOP MENU (Hanya muncul di XL / >1280px) --- */}
-        {/* PERUBAHAN UTAMA: ganti 'hidden md:flex' jadi 'hidden xl:flex' */}
+        {/* --- 2. DESKTOP MENU --- */}
         <div className="hidden xl:flex items-center bg-slate-900/50 p-1 rounded-full border border-white/5 backdrop-blur-sm">
           {navLinks.map((item) => (
             <Link key={item.name} href={item.href} className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white relative group rounded-full hover:bg-white/10 transition-all">
@@ -68,20 +68,23 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* --- 3. TOMBOL KANAN (Desktop XL only) --- */}
+        {/* --- 3. TOMBOL KANAN (Desktop) --- */}
         <div className="hidden xl:flex items-center gap-3">
-             {/* Tombol Tech Stack kecil */}
             <Link href="/tech" className="text-slate-400 hover:text-cyan-400 transition-colors p-2" title="Tech Stack">
                 <Rocket size={20} />
             </Link>
 
-            <Link href="/login" className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20">
-                Login
-            </Link>
+            {/* 🔥 UPDATE: Pakai tag <a> mengarah ke Laravel */}
+            <a 
+                href={ADMIN_URL}
+                // target="_blank" // Aktifkan kalau mau buka di tab baru
+                className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20"
+            >
+                Login Admin
+            </a>
         </div>
 
-        {/* --- 4. HAMBURGER BUTTON (Muncul di HP, Tablet, & Laptop Kecil) --- */}
-        {/* PERUBAHAN: ganti 'md:hidden' jadi 'xl:hidden' */}
+        {/* --- 4. HAMBURGER BUTTON --- */}
         <button 
           className="xl:hidden text-white z-50 p-2 hover:bg-white/10 rounded-full transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -91,7 +94,7 @@ export default function Navbar() {
 
       </div>
 
-      {/* --- 5. MOBILE / TABLET MENU OVERLAY --- */}
+      {/* --- 5. MOBILE MENU OVERLAY --- */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -101,7 +104,6 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-40 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 space-y-6"
           >
-             {/* Background Decoration */}
              <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none"></div>
 
             {navLinks.map((item, i) => (
@@ -122,7 +124,6 @@ export default function Navbar() {
               </motion.div>
             ))}
 
-            {/* Tombol Tambahan di Mobile Menu */}
             <div className="flex flex-col w-full max-w-xs gap-4 pt-6 border-t border-white/10 mt-4">
                 <Link 
                     href="/tech"
@@ -131,13 +132,14 @@ export default function Navbar() {
                 >
                     <Rocket size={18} className="text-cyan-400" /> Tech Stack
                 </Link>
-                <Link 
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
+                
+                {/* 🔥 UPDATE: Tombol Mobile juga ke Laravel */}
+                <a 
+                    href={ADMIN_URL}
                     className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-white font-bold shadow-lg shadow-cyan-500/20"
                 >
                     Login Sistem <ArrowRight size={18} />
-                </Link>
+                </a>
             </div>
 
           </motion.div>

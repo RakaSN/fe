@@ -10,6 +10,7 @@ import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/Footer";
 import { Outfit } from "next/font/google";
 import type { Metadata } from "next";
+import KepalaSekolah from "@/components/home/KepalaSekolah";
 const fontOutfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -25,25 +26,13 @@ export default function Home() {
       <KeunggulanSection />
       <JurusanSection />
       <StatsSection />
+      <KepalaSekolah />
       <VideoProfilSection />
       {/* 5. Layanan Digital (Bento Grid) */}
       <LayananSection />
       <TestimoniSection />
 
-      {/* 6. Guru & Staff (Simple Carousel Placeholder) */}
-      <section className="py-20 container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-12">Tenaga Pendidik Profesional</h2>
-        <div className="flex flex-wrap justify-center gap-6">
-            {/* Contoh 1 Card Guru */}
-            {[1, 2, 3, 4].map((i) => (
-               <div key={i} className="w-64 bg-white p-4 rounded-xl shadow-md border text-center">
-                  <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-                  <h4 className="font-bold text-lg">Bpk. Guru {i}</h4>
-                  <p className="text-sm text-gray-500">Kaprodi TJKT</p>
-               </div> 
-            ))}
-        </div>
-      </section>
+    
 
       {/* 7. Fitur Chat (Global) */}
      

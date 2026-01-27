@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, School, Phone, BookOpen, Send, ArrowLeft } from "lucide-react";
+import { User, School, Phone, Send, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function PendaftaranPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false); // State untuk notif sukses
   
   // State untuk menyimpan data input
   const [formData, setFormData] = useState({
@@ -23,18 +24,40 @@ export default function PendaftaranPage() {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Fungsi saat tombol diklik (Kirim ke WA)
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fungsi Submit (Simpan ke DB -> Lalu ke WA)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // 1. Nomor WA Admin (Ganti dengan nomor aslimu, pakai 62 di depan)
-    const nomorAdmin = "62895414622824"; 
+    try {
+        // 1. Kirim Data ke Laravel Backend
+        const response = await fetch('http://127.0.0.1:8000/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                // Pastikan key ini sesuai dengan validasi di Controller Laravel
+                name: formData.nama,
+                school_origin: formData.sekolahAsal,
+                phone: formData.noHp,
+                major: formData.jurusan,
+            }),
+        });
 
-    // 2. Format Pesan
-    const pesan = `
+        if (!response.ok) {
+            throw new Error('Gagal menyimpan data ke server');
+        }
+
+        // 2. Jika Sukses Simpan ke DB, Lanjut ke WhatsApp
+        setSuccess(true); // Tampilkan notif sukses sesaat
+        
+        const nomorAdmin = "62895414622824"; 
+        const pesan = `
 Halo Admin TAMVAN! 👋
 Saya ingin mendaftar PPDB Online.
+Saya sudah isi formulir di Website.
 
 📝 *Data Diri:*
 Nama: ${formData.nama}
@@ -42,19 +65,24 @@ Asal Sekolah: ${formData.sekolahAsal}
 No HP: ${formData.noHp}
 Minat Jurusan: ${formData.jurusan}
 
-Mohon info langkah selanjutnya. Terima kasih!
-    `;
+Mohon diproses ya kak! Terima kasih.
+        `;
 
-    // 3. Buat Link WA
-    const linkWA = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesan)}`;
+        const linkWA = `https://wa.me/${nomorAdmin}?text=${encodeURIComponent(pesan)}`;
 
-    // 4. Buka WA setelah 1.5 detik (efek loading)
-    setTimeout(() => {
-      window.open(linkWA, "_blank");
-      setLoading(false);
-      // Opsional: Arahkan balik ke home atau halaman sukses
-      // router.push('/'); 
-    }, 1500);
+        // Delay sedikit biar user lihat notif sukses, baru buka WA
+        setTimeout(() => {
+             window.open(linkWA, "_blank");
+             setLoading(false);
+             // Reset form atau redirect (opsional)
+             // setFormData({ nama: "", sekolahAsal: "", noHp: "", jurusan: "RPL" });
+        }, 1500);
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Terjadi kesalahan saat menyimpan data. Cek koneksi backend.");
+        setLoading(false);
+    }
   };
 
   return (
@@ -75,8 +103,15 @@ Mohon info langkah selanjutnya. Terima kasih!
 
         <div className="text-center mb-10">
             <h1 className="text-3xl font-bold text-white mb-2">Formulir Pendaftaran</h1>
-            <p className="text-slate-400">Isi data diri kamu untuk mendapatkan token pendaftaran.</p>
+            <p className="text-slate-400">Isi data diri kamu, data akan tersimpan otomatis.</p>
         </div>
+
+        {/* Notifikasi Sukses Sederhana */}
+        {success && (
+             <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-xl text-green-400 text-center font-bold animate-pulse">
+                 ✅ Data Berhasil Disimpan! Mengalihkan ke WhatsApp...
+             </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
             
@@ -156,11 +191,11 @@ Mohon info langkah selanjutnya. Terima kasih!
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
             >
-                {loading ? 'Memproses...' : <><Send size={20} /> Kirim Data ke WhatsApp</>}
+                {loading ? 'Menyimpan Data...' : <><Send size={20} /> Daftar & Chat WA</>}
             </button>
             
             <p className="text-xs text-center text-slate-500">
-                Data akan otomatis terformat dan dikirim ke Admin via WhatsApp.
+                Data akan disimpan ke database sekolah dan dilanjutkan ke WhatsApp Admin.
             </p>
 
         </form>

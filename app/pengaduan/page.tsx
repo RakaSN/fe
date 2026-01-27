@@ -64,7 +64,7 @@ export default function PengaduanPage() {
       dataToSend.append("urgency", formData.urgency);
       dataToSend.append("message", formData.message);
       dataToSend.append("isAnonymous", String(isAnonymous));
-      if (image) dataToSend.append("file", image);
+      if (image) dataToSend.append("image", image);
 
       const res = await fetch("/api/pengaduan", { method: "POST", body: dataToSend });
       const responseJson = await res.json();

@@ -1,13 +1,24 @@
 "use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation'; // 👈 1. IMPORT INI WAJIB
 import { Menu, X, ArrowRight, Rocket } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
+  const pathname = usePathname(); // 👈 2. PANGGIL HOOK INI
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // ============================================================
+  // 🔥 LOGIKA NGUMPET (RAHASIA SUPAYA GAK MUNCUL DI ADMIN)
+  // ============================================================
+  // Kalau URL diawali "/admin" ATAU "/login", Navbar ini pulang kampung (gak muncul).
+  if (pathname.startsWith("/admin") || pathname === "/login") {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,8 +39,9 @@ export default function Navbar() {
     { name: "Kontak", href: "/kontak" },
   ];
 
-  // URL Backend Laravel (Admin Panel)
-  const ADMIN_URL = "http://127.0.0.1:8000/admin";
+  // 🔥 UPDATE LINK LOGIN
+  // Kita ganti ke "/login" (Internal Next.js) karena Admin Laravel (Port 8000) udah gak kepake.
+  const LOGIN_URL = "/login"; 
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -42,6 +54,7 @@ export default function Navbar() {
         {/* --- 1. LOGO --- */}
         <Link href="/" className="flex items-center gap-3 group relative z-50">
           <div className="relative w-10 h-10 transform group-hover:rotate-12 transition-transform duration-300">
+             {/* Pastikan file logo.png ada di folder public */}
              <Image 
                 src="/logo.png" 
                 alt="Logo" 
@@ -74,14 +87,13 @@ export default function Navbar() {
                 <Rocket size={20} />
             </Link>
 
-            {/* 🔥 UPDATE: Pakai tag <a> mengarah ke Laravel */}
-            <a 
-                href={ADMIN_URL}
-                // target="_blank" // Aktifkan kalau mau buka di tab baru
+            {/* 🔥 BUTTON LOGIN (Pake Link Next.js) */}
+            <Link 
+                href={LOGIN_URL}
                 className="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-all shadow-lg shadow-cyan-500/20"
             >
                 Login Admin
-            </a>
+            </Link>
         </div>
 
         {/* --- 4. HAMBURGER BUTTON --- */}
@@ -133,13 +145,14 @@ export default function Navbar() {
                     <Rocket size={18} className="text-cyan-400" /> Tech Stack
                 </Link>
                 
-                {/* 🔥 UPDATE: Tombol Mobile juga ke Laravel */}
-                <a 
-                    href={ADMIN_URL}
+                {/* 🔥 BUTTON LOGIN MOBILE */}
+                <Link 
+                    href={LOGIN_URL}
+                    onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-white font-bold shadow-lg shadow-cyan-500/20"
                 >
                     Login Sistem <ArrowRight size={18} />
-                </a>
+                </Link>
             </div>
 
           </motion.div>

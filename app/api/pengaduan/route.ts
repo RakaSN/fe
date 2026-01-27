@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { v2 as cloudinary } from "cloudinary";
 
-// Konfigurasi Cloudinary
+// 1. Konfigurasi Cloudinary
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -11,6 +11,30 @@ cloudinary.config({
 
 const prisma = new PrismaClient();
 
+// =================================================================
+// 🔥 BAGIAN BARU: FITUR GET (Biar Dashboard Bisa Baca Data)
+// =================================================================
+export async function GET() {
+  try {
+    const data = await prisma.pengaduan.findMany({
+      orderBy: {
+        createdAt: "desc", // Urutkan dari yang paling baru
+      },
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("❌ Gagal ambil data:", error);
+    return NextResponse.json(
+      { error: "Gagal mengambil data dari database" },
+      { status: 500 }
+    );
+  }
+}
+
+// =================================================================
+// 📸 BAGIAN LAMA: FITUR POST (Kodingan Upload Abang yang Canggih)
+// =================================================================
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -22,22 +46,22 @@ export async function POST(request: Request) {
     const name = formData.get("name") as string;
     const noHp = formData.get("noHp") as string;
     
-    // Ambil file gambar (Key-nya harus "image", sesuai Frontend)
+    // Ambil file gambar
     const file = formData.get("image") as File;
     
     let imageUrl = "";
 
-    // 1. PROSES UPLOAD KE CLOUDINARY (Jika ada file)
+    // PROSES UPLOAD KE CLOUDINARY (Jika ada file)
     if (file) {
       console.log("📸 Mulai upload gambar:", file.name);
       
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Upload via Promise agar bisa ditunggu (await)
+      // Upload via Promise
       const uploadResult: any = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
-          { folder: "pengaduan-sekolah" }, // Nama folder di Cloudinary
+          { folder: "pengaduan-sekolah" }, 
           (error, result) => {
             if (error) {
               console.error("❌ Cloudinary Error:", error);
@@ -55,15 +79,15 @@ export async function POST(request: Request) {
       console.log("ℹ️ User tidak mengupload gambar.");
     }
 
-    // 2. SIMPAN KE DATABASE (Aiven MySQL)
+    // SIMPAN KE DATABASE
     const newPengaduan = await prisma.pengaduan.create({
       data: {
         category,
         urgency,
         message,
-        name: name || "Anonim", // Jaga-jaga kalau kosong
+        name: name || "Anonim",
         noHp: noHp || "-",
-        image: imageUrl, // Simpan link gambar (atau string kosong jika tidak ada)
+        image: imageUrl, 
       },
     });
 

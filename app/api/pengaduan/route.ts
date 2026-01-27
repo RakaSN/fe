@@ -25,30 +25,31 @@ export async function POST(request: Request) {
     
     let imageUrl = "";
 
-    // Logika Upload ke Cloudinary
+    // --- BAGIAN PENTING: UPLOAD LANGSUNG (TANPA SIMPAN LOKAL) ---
     if (file) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Upload process
+      // Kita pakai Promise biar Next.js nunggu upload selesai
       const uploadResponse: any = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
-          { folder: "pengaduan-sekolah" },
-          (error: any, result: any) => { // <--- INI PERBAIKANNYA (Kasih : any)
+          { folder: "pengaduan-sekolah" }, // Nama folder di Cloudinary
+          (error: any, result: any) => {
             if (error) {
               reject(error);
             } else {
               resolve(result);
             }
           }
-        ).end(buffer);
+        ).end(buffer); // <--- Kirim buffer langsung, bukan path file!
       });
 
       imageUrl = uploadResponse.secure_url;
-      console.log("Upload Sukses:", imageUrl);
+      console.log("Upload ke Cloudinary Sukses:", imageUrl);
     }
+    // ------------------------------------------------------------
 
-    // Simpan ke Database
+    // Simpan ke Database (Kolom image wajib sudah ada di schema.prisma & database)
     const newPengaduan = await prisma.pengaduan.create({
       data: {
         category,
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: newPengaduan });
 
   } catch (error) {
-    console.error("Error upload:", error);
+    console.error("Error backend:", error);
     return NextResponse.json(
       { success: false, error: "Gagal memproses data" },
       { status: 500 }

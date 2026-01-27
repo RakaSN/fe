@@ -1,58 +1,69 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { PrismaClient } from "@prisma/client";
+import { v2 as cloudinary } from "cloudinary";
 
-export async function POST(req: Request) {
+const prisma = new PrismaClient();
+
+// Konfigurasi Cloudinary
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function POST(request: Request) {
   try {
-    // 1. Terima Data sebagai FormData (Bukan JSON lagi)
-    const formData = await req.formData();
+    const formData = await request.formData();
     
-    const name = formData.get("name") as string;
-    const noHp = formData.get("noHp") as string;
+    // Ambil data text
     const category = formData.get("category") as string;
     const urgency = formData.get("urgency") as string;
     const message = formData.get("message") as string;
-    const isAnonymous = formData.get("isAnonymous") === "true";
-    const file = formData.get("file") as File | null;
+    
+    // Ambil file gambar
+    const file = formData.get("image") as File;
+    
+    let imageUrl = "";
 
-    let imagePath = null;
+    // Logika Upload ke Cloudinary
+    if (file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Proses Upload Foto (Kalau ada)
-    if (file && file.size > 0) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+      // Upload process
+      const uploadResponse: any = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: "pengaduan-sekolah" },
+          (error: any, result: any) => { // <--- INI PERBAIKANNYA (Kasih : any)
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        ).end(buffer);
+      });
 
-      // Buat nama file unik (biar gak bentrok)
-      const filename = `${Date.now()}-${file.name.replace(/\s/g, "_")}`;
-      
-      // Simpan ke folder public/uploads
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      const filePath = path.join(uploadDir, filename);
-      
-      await writeFile(filePath, buffer);
-      imagePath = `/uploads/${filename}`; // Ini yang disimpan di DB
+      imageUrl = uploadResponse.secure_url;
+      console.log("Upload Sukses:", imageUrl);
     }
 
-    // 3. Simpan ke Database
-    const laporan = await db.pengaduan.create({
+    // Simpan ke Database
+    const newPengaduan = await prisma.pengaduan.create({
       data: {
-        name: isAnonymous ? "ANONIM" : name,
-        noHp: isAnonymous ? "-" : noHp,
         category,
         urgency,
         message,
-        // @ts-ignore
-        image: imagePath, // <--- Baris ini yang kita paksa biar gak error
+        image: imageUrl,
       },
     });
 
-    return NextResponse.json({ success: true, data: laporan });
+    return NextResponse.json({ success: true, data: newPengaduan });
 
   } catch (error) {
-    console.error("Error Server:", error);
+    console.error("Error upload:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal memproses data" },
+      { success: false, error: "Gagal memproses data" },
       { status: 500 }
     );
   }

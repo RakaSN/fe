@@ -70,9 +70,7 @@ export default function PengaduanPage() {
       const responseJson = await res.json();
       if (!res.ok) throw new Error("Gagal upload ke DB");
 
-      const imagePath = responseJson.data?.image;
-      const domain = window.location.origin;
-      const fullLink = imagePath ? `${domain}${imagePath}` : "";
+      const fullLink = responseJson.data?.image || "";
 
       const header = isAnonymous ? "🕵️ *LAPORAN ANONIM*" : "🚨 *LAPORAN RESMI*";
       const identitas = isAnonymous 

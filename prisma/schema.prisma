@@ -117,8 +117,6 @@ model password_reset_tokens {
   created_at DateTime? @db.Timestamp(0)
 }
 
-
-
 model personal_access_tokens {
   id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
   tokenable_type String
@@ -207,6 +205,7 @@ model users {
   created_at        DateTime? @db.Timestamp(0)
   updated_at        DateTime? @db.Timestamp(0)
 }
+
 model Pengaduan {
   id        Int      @id @default(autoincrement())
   name      String?
@@ -216,4 +215,15 @@ model Pengaduan {
   message   String
   image     String?
   createdAt DateTime @default(now())
+}
+
+model pengaduan {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  noHp      String?
+  category  String
+  urgency   String
+  message   String
+  createdAt DateTime @default(now())
+  image     String?
 }

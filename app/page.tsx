@@ -1,4 +1,5 @@
-import HeroSection from "@/components/home/HeroSection";
+import { PrismaClient } from "@prisma/client";
+import HeroSection from "@/components/home/HeroSection"; 
 import JurusanSection from "@/components/home/JurusanSection";
 import LayananSection from "@/components/home/LayananSection";
 import TechMarquee from "@/components/home/TechMarquee";
@@ -9,8 +10,9 @@ import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/Footer";
 import KepalaSekolah from "@/components/home/KepalaSekolah";
 import type { Metadata } from "next";
-// Import Component Mitra dan Typenya
 import MitraSection, { PartnerItem } from "@/components/home/MitraSection";
+
+const prisma = new PrismaClient();
 
 // --- TIPE DATA BERITA ---
 interface NewsItem {
@@ -19,6 +21,8 @@ interface NewsItem {
   slug: string;
   category: string;
   created_at: string;
+  image?: string;
+  content?: string;
 }
 
 // --- FETCHING DATA ---
@@ -26,10 +30,20 @@ interface NewsItem {
 // 1. Ambil Berita
 async function getLatestNews(): Promise<NewsItem[]> {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/berita', { cache: 'no-store' });
-    if (!res.ok) return [];
-    const data: NewsItem[] = await res.json();
-    return data.slice(0, 3);
+    const data = await prisma.news.findMany({
+      take: 3,
+      orderBy: { created_at: 'desc' }
+    });
+
+    return data.map((item) => ({
+      id: Number(item.id),
+      title: item.title,
+      slug: item.slug || "#",
+      category: "Berita",
+      created_at: item.created_at ? item.created_at.toISOString() : new Date().toISOString(),
+      image: item.image ? `/uploads/${item.image}` : undefined,
+      content: item.content || ""
+    }));
   } catch (error) {
     console.error("Gagal ambil berita:", error);
     return [];
@@ -39,22 +53,39 @@ async function getLatestNews(): Promise<NewsItem[]> {
 // 2. Ambil Testimoni
 async function getTestimonials(): Promise<TestimoniItem[]> {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/testimoni', { cache: 'no-store' });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.slice(0, 3);
+    const data = await prisma.testimonis.findMany({
+      take: 3,
+      orderBy: { created_at: 'desc' }
+    });
+
+    return data.map((item: any) => ({
+      id: Number(item.id),
+      name: item.name,
+      role: item.role || "Siswa",
+      content: item.content,
+      image: item.image ? `/uploads/${item.image}` : "/images/placeholder-user.png",
+      company: item.company || "Alumni SMK", 
+      batch: item.batch || "2024",
+    }));
   } catch (error) {
     console.error("Gagal ambil testimoni:", error);
     return [];
   }
 }
 
-// 3. Ambil Mitra / Partner (BARU)
+// 3. Ambil Mitra
 async function getPartners(): Promise<PartnerItem[]> {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/partners', { cache: 'no-store' });
-    if (!res.ok) return [];
-    return res.json();
+    const data = await prisma.partners.findMany({
+        orderBy: { id: 'desc' }
+    });
+
+    return data.map((item: any) => ({
+       id: Number(item.id),
+       name: item.name,
+       logo: item.image ? `/uploads/${item.image}` : "/images/placeholder-logo.png", 
+    }));
+
   } catch (error) {
     console.error("Gagal ambil partner:", error);
     return [];
@@ -67,7 +98,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  // Jalankan ketiganya secara paralel (Berita, Testimoni, Partner)
+  // Jalankan fetch secara paralel (Hapus getHeroImages dari sini)
   const [latestNews, testimonials, partners] = await Promise.all([
     getLatestNews(),
     getTestimonials(),
@@ -76,13 +107,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-white">
+      {/* FIX DISINI: Panggil HeroSection TANPA props heroImages */}
       <HeroSection />
-
-      {/* Menampilkan Mitra/Partner Tepat setelah Hero */}
       
-
       <TechMarquee />
-      {/* Kirim Data Berita */}
       <LayananSection latestNews={latestNews} />
       <KeunggulanSection />
       <JurusanSection />
@@ -90,11 +118,12 @@ export default async function Home() {
       <KepalaSekolah />
       <VideoProfilSection />
       
-      
-      
-      {/* Kirim Data Testimoni */}
+      {/* Testimoni */}
       <TestimoniSection data={testimonials} />
+      
       <div className="border-b border-slate-100 shadow-sm relative z-20"></div>
+      
+      {/* Mitra */}
       <MitraSection data={partners} />
       
       <Footer />

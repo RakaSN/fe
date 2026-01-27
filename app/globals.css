@@ -37,3 +37,107 @@
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
 }
+/* --- FILE: app/globals.css --- */
+/* Tambahkan di paling bawah */
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(50px, -50px) scale(1.2); }
+  66% { transform: translate(-30px, 30px) scale(0.8); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+  animation: blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Fade In Up Animation */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translate3d(0, 40px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
+.delay-100 { animation-delay: 0.15s; }
+.delay-200 { animation-delay: 0.3s; }
+
+/* Fade In Down Animation */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translate3d(0, -30px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.animate-fade-in-down { animation: fadeInDown 0.8s ease-out forwards; opacity: 0; }
+
+/* --- TAMBAHKAN DI BAGIAN BAWAH globals.css --- */
+
+/* 1. EFEK INFINITE GRID (Lantai Bergerak) */
+.perspective-grid {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.grid-floor {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.3) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: rotateX(60deg);
+  animation: grid-move 5s linear infinite;
+  mask-image: linear-gradient(to bottom, transparent, black 40%, black 80%, transparent); /* Biar grid memudar di kejauhan */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 80%, transparent);
+}
+
+@keyframes grid-move {
+  0% { transform: rotateX(60deg) translateY(0); }
+  100% { transform: rotateX(60deg) translateY(50px); }
+}
+
+/* 2. EFEK TEXT OUTLINE (Teks Bolong) */
+/* Stroke tipis */
+.font-outline-2 {
+  -webkit-text-stroke: 2px transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  /* Warna isi teksnya dibikin transparan/gradient di class tailwind, 
+     tapi stroke-nya kita mainkan via gradient background */
+   background-image: linear-gradient(to right, #22d3ee, #3b82f6);
+}
+
+/* Stroke tebal untuk Desktop */
+@media (min-width: 768px) {
+  .font-outline-4 {
+    -webkit-text-stroke: 3px transparent; 
+  }
+}
+
+/* Animasi Spin */
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* --- CSS CYBERPUNK TAMBAHAN --- */
+
+/* Bentuk tombol terpotong di pojok */
+.clip-path-polygon {
+  clip-path: polygon(
+    10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%
+  );
+}
+
+/* Background grid garis-garis monitor (Scanlines) */
+.bg-radial-gradient-to-t {
+    background-image: radial-gradient(circle at center, var(--tw-gradient-from) 0%, var(--tw-gradient-via) 50%, var(--tw-gradient-to) 100%);
+}

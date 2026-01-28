@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
-import { Send, ImagePlus, Trash2, ShieldAlert, User, Phone, Tag, AlertTriangle, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Send, ImagePlus, Trash2, ShieldAlert, User, Phone, Tag, AlertTriangle, FileText, Fingerprint, EyeOff, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import imageCompression from 'browser-image-compression';
 
@@ -21,27 +21,23 @@ export default function PengaduanPage() {
     message: ""
   });
 
-  // --- GANTI NOMOR WA ADMIN DISINI ---
   const ADMIN_WA = "62895414622824"; 
 
-  // --- LOGIC (SAMA SEPERTI SEBELUMNYA) ---
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
-      alert("Harap upload file gambar saja (JPG/PNG)");
+      alert("Format file tidak didukung. Harap gunakan JPG/PNG.");
       return;
     }
 
-    const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
+    const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1024, useWebWorker: true };
 
     try {
       const compressedFile = await imageCompression(file, options);
       setImage(compressedFile);
       setPreview(URL.createObjectURL(compressedFile));
     } catch (error) {
-      console.log(error);
       alert("Gagal memproses gambar.");
     }
   };
@@ -58,8 +54,8 @@ export default function PengaduanPage() {
 
     try {
       const dataToSend = new FormData();
-      dataToSend.append("name", formData.name);
-      dataToSend.append("noHp", formData.noHp);
+      dataToSend.append("name", isAnonymous ? "Anonim" : formData.name);
+      dataToSend.append("noHp", isAnonymous ? "-" : formData.noHp);
       dataToSend.append("category", formData.category);
       dataToSend.append("urgency", formData.urgency);
       dataToSend.append("message", formData.message);
@@ -68,157 +64,182 @@ export default function PengaduanPage() {
 
       const res = await fetch("/api/pengaduan", { method: "POST", body: dataToSend });
       const responseJson = await res.json();
-      if (!res.ok) throw new Error("Gagal upload ke DB");
+      
+      if (!res.ok) throw new Error("Database sync failed");
 
       const fullLink = responseJson.data?.image || "";
-
-      const header = isAnonymous ? "🕵️ *LAPORAN ANONIM*" : "🚨 *LAPORAN RESMI*";
+      const header = isAnonymous ? "🕵️ *LAPORAN ANONIM (ENCRYPTED)*" : "🚨 *LAPORAN RESMI SISWA*";
       const identitas = isAnonymous 
-        ? "Nama: _Dirahasiakan_\nNo HP: _-" 
+        ? "_Identitas pelapor disembunyikan oleh sistem._" 
         : `Nama: *${formData.name}*\nNo HP: *${formData.noHp}*`;
 
-      const noteFoto = fullLink 
-        ? `\n📷 *Bukti Foto:* \n${fullLink} \n_(Klik link di atas untuk melihat bukti)_` 
-        : "";
+      const noteFoto = fullLink ? `\n\n📷 *Lampiran Bukti:* \n${fullLink}` : "";
 
-      const textWA = `${header}\n\n${identitas}\nKategori: *${formData.category}*\nUrgensi: *${formData.urgency}*\n\n📝 *Isi Laporan:*\n"${formData.message}"\n${noteFoto}\n\n_Tersimpan di Database._`;
+      const textWA = `${header}\n\n${identitas}\n----------------------------------\n📂 Kategori: *${formData.category}*\n⚠️ Urgensi: *${formData.urgency}*\n\n📝 *DETAIL KEJADIAN:*\n"${formData.message}"${noteFoto}\n\n_Laporan ini terenkripsi dan tersimpan di database sekolah._`;
 
       window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(textWA)}`, "_blank");
       
-      alert("Laporan berhasil dikirim!");
       setFormData({ name: "", noHp: "", category: "Bullying", urgency: "Biasa", message: "" });
       removeImage();
       setIsSubmitting(false);
+      alert("Laporan terkirim ke pusat data.");
 
     } catch (error) {
-      console.error(error);
-      alert("Gagal menyimpan data.");
+      alert("Koneksi gagal. Pastikan backend aktif.");
       setIsSubmitting(false);
     }
   };
 
-  // --- TAMPILAN BARU ---
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent text-white flex items-center justify-center p-6 py-32 relative overflow-hidden">
       
-      {/* BACKGROUND EFFECTS (Glow di belakang) */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-600/30 rounded-full blur-3xl opacity-50 pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-rose-600/30 rounded-full blur-3xl opacity-50 pointer-events-none" />
+      {/* GLOW DECOR */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rose-600/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] pointer-events-none" />
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }} 
-        animate={{ opacity: 1, scale: 1 }} 
-        transition={{ duration: 0.5 }}
-        className="max-w-2xl w-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative z-10"
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="max-w-3xl w-full bg-slate-900/60 backdrop-blur-2xl border border-white/5 p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative z-10"
       >
         
-        {/* HEADER */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-purple-600 mb-4 shadow-lg shadow-rose-500/30">
-            <ShieldAlert size={32} className="text-white" />
+        {/* HEADER TACTICAL */}
+        <div className="text-center mb-12">
+          <div className="relative inline-block mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-slate-950 border border-white/10 flex items-center justify-center relative z-10">
+              <ShieldAlert size={38} className={isAnonymous ? "text-rose-500" : "text-cyan-400"} />
+            </div>
+            <div className={`absolute inset-0 blur-2xl opacity-40 animate-pulse ${isAnonymous ? "bg-rose-600" : "bg-cyan-600"}`} />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            Layanan Pengaduan Siswa
+          
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+            Digital <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-purple-600 italic">Whistleblower.</span>
           </h1>
-          <p className="text-slate-400 mt-2 text-sm">
-            Suarakan kebenaran. Identitas Anda aman bersama kami.
-          </p>
+          <p className="text-slate-500 mt-3 text-sm font-mono uppercase tracking-[0.2em]">Secure_Report_System_v1.0</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* SWITCH ANONIM */}
-          <div className="bg-slate-800/50 p-4 rounded-xl border border-white/5 flex items-center justify-between group hover:border-rose-500/50 transition-colors cursor-pointer" onClick={() => setIsAnonymous(!isAnonymous)}>
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-6 rounded-full flex items-center p-1 transition-colors ${isAnonymous ? "bg-rose-500" : "bg-slate-600"}`}>
-                <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${isAnonymous ? "translate-x-4" : "translate-x-0"}`} />
-              </div>
-              <span className={`font-medium ${isAnonymous ? "text-rose-400" : "text-slate-300"}`}>
-                {isAnonymous ? "Mode Rahasia (Anonim) Aktif" : "Kirim sebagai Diri Sendiri"}
-              </span>
+          {/* ANONYMOUS TOGGLE - CUSTOM DESIGN */}
+          <div 
+            onClick={() => setIsAnonymous(!isAnonymous)}
+            className={`cursor-pointer p-6 rounded-2xl border transition-all duration-500 flex items-center justify-between overflow-hidden relative ${
+                isAnonymous ? "bg-rose-500/10 border-rose-500/50" : "bg-slate-950/50 border-white/5 hover:border-white/10"
+            }`}
+          >
+            <div className="flex items-center gap-4 relative z-10">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isAnonymous ? "bg-rose-500 text-white" : "bg-slate-900 text-slate-500"}`}>
+                    {isAnonymous ? <EyeOff size={22} /> : <Fingerprint size={22} />}
+                </div>
+                <div>
+                    <h3 className={`font-bold italic uppercase tracking-wider text-sm ${isAnonymous ? "text-rose-400" : "text-white"}`}>
+                        {isAnonymous ? "Identitas_Disembunyikan" : "Status_Pengadu"}
+                    </h3>
+                    <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                        {isAnonymous ? "Your identity is encrypted" : "Report as registered student"}
+                    </p>
+                </div>
+            </div>
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isAnonymous ? "border-rose-500 bg-rose-500" : "border-slate-700"}`}>
+                {isAnonymous && <CheckCircle2 size={16} className="text-white" />}
             </div>
           </div>
 
-          {/* INPUT DATA DIRI (ANIMASI HILANG TIMBUL) */}
-          <motion.div 
-            animate={{ height: isAnonymous ? 0 : "auto", opacity: isAnonymous ? 0 : 1 }}
-            className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <div className="relative group">
-              <User className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-rose-400 transition-colors" size={18} />
-              <input 
-                required={!isAnonymous} type="text" placeholder="Nama Lengkap"
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all placeholder:text-slate-600"
-                value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-              />
-            </div>
-            <div className="relative group">
-              <Phone className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-rose-400 transition-colors" size={18} />
-              <input 
-                required={!isAnonymous} type="tel" placeholder="Nomor WhatsApp"
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all placeholder:text-slate-600"
-                value={formData.noHp} onChange={(e) => setFormData({...formData, noHp: e.target.value})}
-              />
-            </div>
-          </motion.div>
+          {/* INPUT DATA DIRI (HIDDEN ON ANONYMOUS) */}
+          <AnimatePresence>
+            {!isAnonymous && (
+                <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-1">Full_Name</label>
+                        <div className="relative group">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-cyan-400 transition-colors" size={18} />
+                            <input 
+                                required={!isAnonymous} type="text"
+                                className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500/50 transition-all italic font-light"
+                                value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-1">Contact_ID</label>
+                        <div className="relative group">
+                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-cyan-400 transition-colors" size={18} />
+                            <input 
+                                required={!isAnonymous} type="tel"
+                                className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500/50 transition-all italic font-light"
+                                value={formData.noHp} onChange={(e) => setFormData({...formData, noHp: e.target.value})}
+                            />
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* DROPDOWN KATEGORI & URGENSI */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative group">
-              <Tag className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-rose-400 transition-colors" size={18} />
-              <select 
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 appearance-none focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-slate-300 cursor-pointer"
-                value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}
-              >
-                <option>Bullying</option>
-                <option>Fasilitas Rusak</option>
-                <option>Kekerasan Seksual</option>
-                <option>Pungli / Korupsi</option>
-                <option>Lainnya</option>
-              </select>
+          {/* CATEGORY & URGENCY */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-1">Klasifikasi_Kejadian</label>
+                <div className="relative group">
+                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-purple-400 transition-colors" size={18} />
+                    <select 
+                        className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 appearance-none focus:outline-none focus:border-purple-500/50 transition-all italic font-light cursor-pointer"
+                        value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}
+                    >
+                        {['Bullying', 'Fasilitas Rusak', 'Kekerasan Seksual', 'Pelayanan', 'Lainnya'].map(opt => <option key={opt} className="bg-slate-900">{opt}</option>)}
+                    </select>
+                </div>
             </div>
-            <div className="relative group">
-              <AlertTriangle className="absolute left-4 top-3.5 text-slate-500 group-focus-within:text-rose-400 transition-colors" size={18} />
-              <select 
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 appearance-none focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all text-slate-300 cursor-pointer"
-                value={formData.urgency} onChange={(e) => setFormData({...formData, urgency: e.target.value})}
-              >
-                <option>Biasa</option>
-                <option>Penting</option>
-                <option>Darurat (Segera!)</option>
-              </select>
+            <div className="space-y-2">
+                <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-1">Urgensi</label>
+                <div className="relative group">
+                    <AlertTriangle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-rose-400 transition-colors" size={18} />
+                    <select 
+                        className="w-full bg-slate-950/50 border border-white/5 rounded-2xl py-4 pl-12 pr-4 appearance-none focus:outline-none focus:border-rose-500/50 transition-all italic font-light cursor-pointer"
+                        value={formData.urgency} onChange={(e) => setFormData({...formData, urgency: e.target.value})}
+                    >
+                        {['Biasa', 'Penting', 'Darurat (Segera!)'].map(opt => <option key={opt} className="bg-slate-900">{opt}</option>)}
+                    </select>
+                </div>
             </div>
           </div>
 
           {/* TEXT AREA */}
-          <div className="relative group">
-            <FileText className="absolute left-4 top-4 text-slate-500 group-focus-within:text-rose-400 transition-colors" size={18} />
-            <textarea 
-              required rows={5} placeholder="Ceritakan detail kejadian secara lengkap..."
-              className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all placeholder:text-slate-600 resize-none"
-              value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})}
-            ></textarea>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-1">Kronologi_Kejadian</label>
+            <div className="relative group">
+                <FileText className="absolute left-4 top-5 text-slate-600 group-focus-within:text-white transition-colors" size={18} />
+                <textarea 
+                    required rows={5} placeholder="Input transmission data here..."
+                    className="w-full bg-slate-950/50 border border-white/5 rounded-3xl py-4 pl-12 pr-6 focus:outline-none focus:border-white/20 transition-all italic font-light resize-none"
+                    value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})}
+                ></textarea>
+            </div>
           </div>
 
-          {/* UPLOAD FOTO KEREN */}
-          <div>
-            <span className="block text-sm font-medium text-slate-400 mb-2 ml-1">Bukti Foto (Opsional)</span>
+          {/* UPLOAD FOTO PRO */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-mono text-slate-500 uppercase tracking-widest ml-1">Bukti_Laporan (Optional)</label>
             {!preview ? (
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="group border-2 border-dashed border-slate-700 hover:border-rose-500 bg-slate-900/30 hover:bg-slate-800/50 rounded-2xl h-32 flex flex-col items-center justify-center cursor-pointer transition-all duration-300"
+                className="group border-2 border-dashed border-white/5 hover:border-white/10 bg-slate-950/30 rounded-[2rem] h-36 flex flex-col items-center justify-center cursor-pointer transition-all"
               >
-                <div className="bg-slate-800 p-3 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                  <ImagePlus className="text-slate-400 group-hover:text-rose-400" size={24} />
+                <div className="bg-slate-900 p-3 rounded-2xl mb-3 group-hover:scale-110 transition-transform shadow-xl">
+                  <ImagePlus className="text-slate-600 group-hover:text-white" size={24} />
                 </div>
-                <span className="text-xs text-slate-500 group-hover:text-slate-300">Klik untuk pilih foto</span>
+                <span className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">Tambah_file.img.jpg.png</span>
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
               </div>
             ) : (
-              <div className="relative w-full h-48 bg-black rounded-2xl overflow-hidden border border-slate-700 group">
-                <Image src={preview} alt="Preview" fill className="object-contain" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button type="button" onClick={removeImage} className="bg-red-500/80 hover:bg-red-600 text-white p-3 rounded-full backdrop-blur-sm transition-transform hover:scale-110">
+              <div className="relative w-full h-56 bg-black rounded-[2rem] overflow-hidden border border-white/5 group shadow-2xl">
+                <Image src={preview} alt="Preview" fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                  <button type="button" onClick={removeImage} className="bg-rose-600 text-white p-4 rounded-full shadow-2xl transition-transform hover:scale-110">
                     <Trash2 size={20} />
                   </button>
                 </div>
@@ -226,26 +247,24 @@ export default function PengaduanPage() {
             )}
           </div>
 
-          {/* SUBMIT BUTTON GRADIENT */}
-          <button 
-            disabled={isSubmitting} type="submit" 
-            className="w-full bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3"
-          >
-            {isSubmitting ? (
-              <span className="animate-pulse">Mengirim Data...</span>
-            ) : (
-              <>
-                <Send size={20} />
-                <span>Kirim Laporan Sekarang</span>
-              </>
-            )}
-          </button>
-          
+          {/* SUBMIT BUTTON */}
+          <div className="pt-4">
+            <button 
+                disabled={isSubmitting} type="submit" 
+                className={`w-full relative overflow-hidden group font-black uppercase italic tracking-[0.2em] py-5 rounded-2xl transition-all shadow-2xl ${
+                    isAnonymous ? "bg-rose-600 text-white" : "bg-white text-slate-950"
+                }`}
+            >
+                <span className="relative z-10 flex items-center justify-center gap-3 text-xs">
+                    {isSubmitting ? 'Transmitting_Data...' : <><Send size={16} /> Kirim_Laporan</>}
+                </span>
+                <div className={`absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ${isAnonymous ? "bg-rose-500" : "bg-cyan-400"}`}></div>
+            </button>
+            <p className="text-[9px] font-mono text-center text-slate-600 mt-8 uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">
+                Notice: Segala bentuk penyalahgunaan sistem ada konsekuensinya.
+            </p>
+          </div>
         </form>
-
-        <p className="text-center text-slate-500 text-xs mt-6">
-          &copy; {new Date().getFullYear()} Sekolah Aman & Nyaman.
-        </p>
       </motion.div>
     </div>
   );

@@ -1,8 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import Image from "next/image";
+import Link from "next/link"; 
 import { Calendar, Newspaper, ArrowUpRight, Hash } from "lucide-react";
 
-const prisma = new PrismaClient();
+//const prisma = new PrismaClient();
 
 async function getBerita() {
   try {
@@ -46,64 +47,87 @@ export default async function BeritaPage() {
 
         {/* --- GRID BERITA --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {berita.map((item) => (
-            <div 
-              key={Number(item.id)} 
-              className="group relative bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden hover:border-cyan-500/30 transition-all duration-500 flex flex-col h-full"
-            >
-              {/* GAMBAR BERITA */}
-              <div className="relative h-56 w-full overflow-hidden">
-                {item.image ? (
-                  <Image 
-                    src={`/uploads/${item.image}`} 
-                    alt={item.title || "Berita"}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0"
-                    unoptimized 
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full bg-slate-800 text-slate-500 gap-2">
-                    <Newspaper size={32} strokeWidth={1} />
-                    <span className="text-[10px] font-mono uppercase tracking-widest">No_Media_Found</span>
+          {berita.map((item) => {
+            
+            // --- LOGIC PERBAIKAN GAMBAR (FIX TYPESCRIPT) ---
+            // 1. Paksa jadi string (jika null, jadi "")
+            const rawImage = item.image || ""; 
+            
+            // 2. Cek apakah string tidak kosong
+            const hasImage = rawImage.length > 0;
+            
+            // 3. Tentukan URL (Gunakan variable rawImage, JANGAN item.image)
+            let imageSrc = "/images/placeholder.jpg"; 
+            
+            if (hasImage) {
+                if (rawImage.startsWith("/") || rawImage.startsWith("http")) {
+                    imageSrc = rawImage;
+                } else {
+                    imageSrc = `/uploads/${rawImage}`;
+                }
+            }
+            // -----------------------------------------------
+
+            return (
+            <Link href={`/berita/${item.id}`} key={Number(item.id)} className="block h-full"> 
+                <div 
+                  className="group relative bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden hover:border-cyan-500/30 transition-all duration-500 flex flex-col h-full hover:translate-y-[-5px]"
+                >
+                  {/* GAMBAR BERITA */}
+                  <div className="relative h-56 w-full overflow-hidden bg-slate-800">
+                    {hasImage ? (
+                      <Image 
+                        src={imageSrc} 
+                        alt={item.title || "Berita"}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full bg-slate-800 text-slate-500 gap-2">
+                        <Newspaper size={32} strokeWidth={1} />
+                        <span className="text-[10px] font-mono uppercase tracking-widest">No_Media_Found</span>
+                      </div>
+                    )}
+                    
+                    {/* Overlay Gradient on Image */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
+                    
+                    {/* Badge Category */}
+                    <div className="absolute top-4 left-4">
+                        <span className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-cyan-400 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-cyan-500/20 uppercase">
+                            <Hash size={10} /> {item.category || "Bulletin"}
+                        </span>
+                    </div>
                   </div>
-                )}
-                {/* Overlay Gradient on Image */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
-                
-                {/* Badge Category */}
-                <div className="absolute top-4 left-4">
-                    <span className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-cyan-400 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-cyan-500/20 uppercase">
-                        <Hash size={10} /> Bulletin
-                    </span>
-                </div>
-              </div>
 
-              {/* KONTEN */}
-              <div className="p-7 flex-1 flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                    <Calendar size={12} className="text-slate-500" />
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                        {item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }) : "UNKNOWN_DATE"}
-                    </span>
-                </div>
+                  {/* KONTEN */}
+                  <div className="p-7 flex-1 flex flex-col">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Calendar size={12} className="text-slate-500" />
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                            {item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }) : "UNKNOWN_DATE"}
+                        </span>
+                    </div>
 
-                <h2 className="text-xl font-black text-white italic uppercase tracking-tighter leading-tight group-hover:text-cyan-400 transition-colors line-clamp-2">
-                  {item.title}
-                </h2>
+                    <h2 className="text-xl font-black text-white italic uppercase tracking-tighter leading-tight group-hover:text-cyan-400 transition-colors line-clamp-2">
+                      {item.title}
+                    </h2>
 
-                <div className="mt-4 text-slate-400 text-sm font-light leading-relaxed line-clamp-3 flex-1 italic">
-                  {item.content?.replace(/<[^>]+>/g, '')} 
+                    <div className="mt-4 text-slate-400 text-sm font-light leading-relaxed line-clamp-3 flex-1 italic">
+                      {item.content?.replace(/<[^>]+>/g, '')} 
+                    </div>
+                    
+                    <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center">
+                        <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest group-hover:text-cyan-500/70 transition-colors">Read_More_Signal</span>
+                        <button className="p-2 rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-cyan-500 group-hover:text-slate-900 transition-all duration-300">
+                            <ArrowUpRight size={18} />
+                        </button>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center">
-                    <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">Read_More_Signal</span>
-                    <button className="p-2 rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-cyan-500 group-hover:text-slate-900 transition-all duration-300">
-                        <ArrowUpRight size={18} />
-                    </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            </Link>
+          )})}
         </div>
 
         {/* --- EMPTY STATE --- */}

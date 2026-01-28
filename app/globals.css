@@ -2,48 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
-
-/* --- TAMBAHAN CSS UNTUK EFEK PREMIUM --- */
-
-/* Latar Belakang Mesh Gradient Bergerak */
-/* --- PERBAIKAN: Ganti nama class yang error tadi dengan ini --- */
-
-/* Latar Belakang Mesh Gradient Bergerak */
-.bg-grid-pattern {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(15 23 42 / 0.04)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+:root {
+  --bg-dark: #020617; /* Warna dasar pekat untuk semua section */
 }
 
-/* Efek Glow pada Hover Card (Tetap sama) */
-.hover-glow-card {
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
+@layer base {
+  body {
+    @apply bg-[#020617] text-white;
+    scroll-behavior: smooth;
+  }
 }
-.hover-glow-card::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: -1;
-    width: 150%;
-    height: 150%;
-    background: radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(147,51,234,0.2) 30%, rgba(0,0,0,0) 70%);
-    transform: translate(-50%, -50%) scale(0);
-    transition: transform 0.5s ease-out, opacity 0.5s ease-out;
-    opacity: 0;
-    pointer-events: none;
-}
-.hover-glow-card:hover::before {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-}
-/* --- FILE: app/globals.css --- */
-/* Tambahkan di paling bawah */
 
+/* --- 1. UNIFIED BACKGROUND SYSTEM (Kunci agar Seamless) --- */
+
+/* Grid Halus yang nyambung di semua section */
+.bg-unified-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Noise Texture untuk kesan premium/grainy */
+.bg-noise {
+  background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+  opacity: 0.05;
+  mix-blend-mode: soft-light;
+}
+
+/* --- 2. ANIMASI CORE --- */
+
+/* Animasi Scanline untuk Kartu Jurusan */
+@keyframes scan {
+  0% { top: -10%; opacity: 0; }
+  50% { opacity: 1; }
+  100% { top: 110%; opacity: 0; }
+}
+
+.animate-scan {
+  animation: scan 2.5s linear infinite;
+}
+
+/* Animasi Blob Cahaya yang bergerak pelan */
 @keyframes blob {
   0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(50px, -50px) scale(1.2); }
-  66% { transform: translate(-30px, 30px) scale(0.8); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
   100% { transform: translate(0px, 0px) scale(1); }
 }
 
@@ -51,93 +55,94 @@
   animation: blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+/* Animasi Scroll Tak Terbatas (Mitra/Partner) */
+@keyframes infinite-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+.animate-infinite-scroll {
+  animation: infinite-scroll 40s linear infinite;
 }
 
-/* Fade In Up Animation */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translate3d(0, 40px, 0); }
-    to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-.animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
-.delay-100 { animation-delay: 0.15s; }
-.delay-200 { animation-delay: 0.3s; }
+/* --- 3. CLIPPING & SHAPES (Efek Cyberpunk) --- */
 
-/* Fade In Down Animation */
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translate3d(0, -30px, 0); }
-    to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-.animate-fade-in-down { animation: fadeInDown 0.8s ease-out forwards; opacity: 0; }
-
-/* --- TAMBAHKAN DI BAGIAN BAWAH globals.css --- */
-
-/* 1. EFEK INFINITE GRID (Lantai Bergerak) */
-.perspective-grid {
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-.grid-floor {
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  top: -50%;
-  left: -50%;
-  background-image: 
-    linear-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(6, 182, 212, 0.3) 1px, transparent 1px);
-  background-size: 50px 50px;
-  transform: rotateX(60deg);
-  animation: grid-move 5s linear infinite;
-  mask-image: linear-gradient(to bottom, transparent, black 40%, black 80%, transparent); /* Biar grid memudar di kejauhan */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 80%, transparent);
-}
-
-@keyframes grid-move {
-  0% { transform: rotateX(60deg) translateY(0); }
-  100% { transform: rotateX(60deg) translateY(50px); }
-}
-
-/* 2. EFEK TEXT OUTLINE (Teks Bolong) */
-/* Stroke tipis */
-.font-outline-2 {
-  -webkit-text-stroke: 2px transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
-  /* Warna isi teksnya dibikin transparan/gradient di class tailwind, 
-     tapi stroke-nya kita mainkan via gradient background */
-   background-image: linear-gradient(to right, #22d3ee, #3b82f6);
-}
-
-/* Stroke tebal untuk Desktop */
-@media (min-width: 768px) {
-  .font-outline-4 {
-    -webkit-text-stroke: 3px transparent; 
-  }
-}
-
-/* Animasi Spin */
-@keyframes spin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* --- CSS CYBERPUNK TAMBAHAN --- */
-
-/* Bentuk tombol terpotong di pojok */
-.clip-path-polygon {
+/* Kartu Jurusan: Potong sudut kanan atas dan kiri bawah */
+.clip-path-cyber {
   clip-path: polygon(
-    10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%
+    0% 20px, 20px 0%, 
+    100% 0%, 100% calc(100% - 20px), 
+    calc(100% - 20px) 100%, 0% 100%
   );
 }
 
-/* Background grid garis-garis monitor (Scanlines) */
-.bg-radial-gradient-to-t {
-    background-image: radial-gradient(circle at center, var(--tw-gradient-from) 0%, var(--tw-gradient-via) 50%, var(--tw-gradient-to) 100%);
+/* Tombol miring futuristik */
+.clip-path-button {
+  clip-path: polygon(
+    15% 0%, 100% 0%, 
+    100% 85%, 85% 100%, 
+    0% 100%, 0% 15%
+  );
+}
+
+/* --- 4. UTILITIES LAINNYA --- */
+
+.font-mono-tech {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0.15em;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.5); /* Warna Cyan */
+}
+
+/* Efek Glow pada Text */
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+/* --- GLOBAL CYBER GRID SYSTEM --- */
+.cyber-bg-main {
+  background-color: #020617; /* Warna dasar sama semua */
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px; /* Ukuran kotak sama semua */
+  background-attachment: fixed; /* Kunci grid agar tidak ikut scroll */
+}
+
+/* Masking supaya grid makin ke bawah makin hilang atau fokus di tengah */
+.cyber-mask {
+  mask-image: radial-gradient(circle at center, black, transparent 95%);
+}
+
+@layer base {
+  body {
+    @apply bg-[#020617]; /* Warna dasar gelap yang sama untuk semua */
+    background-image: 
+      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; /* Ukuran kotak grid */
+  }
+}
+
+/* Tambahkan efek vignette agar grid memudar di pinggir layar (Opsional tapi keren) */
+.vignette-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(2, 6, 23, 0.8) 100%);
+  pointer-events: none;
+  z-index: 1;
 }

@@ -175,15 +175,31 @@ export default function HeroSection() {
             {`> LOADING: GENERASI_EMAS_2045.EXE`}
         </p>
 
-        {/* CYBER BUTTONS */}
-        <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link href="/ppdb" className="relative px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-lg uppercase tracking-widest transition-all clip-path-polygon group">
-                <span className="absolute inset-0 w-full h-full bg-white/30 skew-x-12 -ml-20 group-hover:ml-80 transition-all duration-500 ease-in-out"></span>
-                START ENGINE
+        {/* CYBER BUTTONS - Fixed & Centered */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-6 relative z-30">
+            {/* START ENGINE BUTTON */}
+            <Link 
+              href="/ppdb" 
+              className="group relative inline-flex items-center justify-center px-10 py-4 bg-cyan-600 hover:bg-cyan-400 text-black font-black text-lg uppercase tracking-[0.2em] transition-all duration-300 overflow-hidden clip-path-button shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+            >
+                {/* White Shimmer Effect - Diperbaiki agar tidak keluar batas */}
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
+                
+                <span className="relative">START ENGINE</span>
             </Link>
-            <Link href="/jurusan" className="px-8 py-4 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 font-mono uppercase tracking-widest transition-all relative overflow-hidden group">
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></span>
-                SYSTEM DATA
+
+            {/* SYSTEM DATA BUTTON */}
+            <Link 
+              href="/jurusan" 
+              className="group relative inline-flex items-center justify-center px-10 py-4 border border-cyan-500/50 text-cyan-400 hover:text-white font-mono text-lg uppercase tracking-widest transition-all duration-300 overflow-hidden"
+            >
+                {/* Background Fill on Hover */}
+                <span className="absolute inset-0 w-0 bg-cyan-500/10 group-hover:w-full transition-all duration-300 ease-out"></span>
+                
+                {/* Animated Bottom Line */}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></span>
+                
+                <span className="relative">SYSTEM DATA</span>
             </Link>
         </div>
 

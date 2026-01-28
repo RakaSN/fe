@@ -8,19 +8,32 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // --- BAGIAN ANIMATION ---
       animation: {
-        blob: "blob 7s infinite",
+        blob: "blob 7s infinite", // Animasi lama (tetap ada)
+        'scan': 'scan 3s linear infinite', // Baru: Efek laser scan di kartu
+        'music-bar': 'music-bar 0.5s ease-in-out infinite alternate', // Baru: Efek audio visualizer
       },
+      // --- BAGIAN KEYFRAMES ---
       keyframes: {
-        blob: {
+        blob: { // Keyframe lama (tetap ada)
           "0%": { transform: "translate(0px, 0px) scale(1)" },
           "33%": { transform: "translate(30px, -50px) scale(1.1)" },
           "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
           "100%": { transform: "translate(0px, 0px) scale(1)" },
         },
+        // Keyframe baru: Gerakan laser dari atas ke bawah
+        scan: {
+          '0%': { top: '0%' },
+          '100%': { top: '100%' },
+        },
+        // Keyframe baru: Gerakan batang musik naik turun
+        'music-bar': {
+          '0%': { height: '20%' },
+          '100%': { height: '100%' },
+        }
       },
     },
   },
   plugins: [require('@tailwindcss/typography'),],
-  
 }

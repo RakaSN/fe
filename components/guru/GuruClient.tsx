@@ -1,17 +1,18 @@
 "use client";
+
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link"; // <--- JANGAN LUPA INI
+import Link from "next/link";
 import { Linkedin, Mail, Twitter, Award, Star, Zap } from "lucide-react";
 
 export interface TeacherItem {
-  id: number;
+  id: string; // UBAH KE STRING (karena BigInt dari API dikirim sebagai string)
   name: string;
   role: string;
   subject: string;
   experience: string;
   level: string;
-  image_url: string;
+  image: string; // UBAH JADI 'image' (sesuai database)
   theme_color: string;
   linkedin?: string;
   twitter?: string;
@@ -26,12 +27,14 @@ const colorMap: Record<string, string> = {
   orange: "from-yellow-400 to-orange-500",
   green:  "from-green-400 to-emerald-600",
   slate:  "from-slate-400 to-slate-600",
+  emerald:"from-emerald-400 to-teal-600", // Tambahan untuk emerald
+  pink:   "from-pink-400 to-rose-500",    // Tambahan untuk pink
 };
 
 export default function GuruClient({ teachers }: { teachers: TeacherItem[] }) {
   return (
     <div className="container mx-auto px-4">
-        {/* Header (Sama seperti sebelumnya) */}
+        {/* Header */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
             <motion.h1 
                 initial={{ opacity: 0, y: -20 }}
@@ -47,6 +50,7 @@ export default function GuruClient({ teachers }: { teachers: TeacherItem[] }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {teachers.map((teacher, i) => {
+                // Fallback warna kalau theme_color ngaco/kosong
                 const gradientClass = colorMap[teacher.theme_color] || colorMap['cyan'];
 
                 return (
@@ -66,12 +70,13 @@ export default function GuruClient({ teachers }: { teachers: TeacherItem[] }) {
                                 <div className={`absolute inset-0 bg-gradient-to-tr ${gradientClass} opacity-0 group-hover:opacity-20 transition-opacity duration-500`}></div>
 
                                 <div className="absolute top-0 left-0 w-full h-3/4 overflow-hidden">
+                                    {/* --- PERBAIKAN UTAMA DISINI --- */}
                                     <Image 
-                                        src={teacher.image_url} 
-                                        alt={teacher.name} 
+                                        src={teacher.image || "/uploads/Cihuy.png"} 
+                                        alt={teacher.name || "Guru"} 
                                         fill
                                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
-                                        unoptimized={true}
+                                        // unoptimized={true} // Boleh dinyalakan kalau gambar di public folder sering error saat dev
                                     />
                                     <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
                                 </div>
